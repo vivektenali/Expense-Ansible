@@ -1,0 +1,39 @@
+---
+- name: Configuring frontend server
+  hosts: frontend
+  become: yes
+  tasks:
+    - name: Installing Nginx
+      package:
+        name: nginx
+        state: present
+    - name: Remove HTML Directory
+      file:
+        path: /usr/share/nginx/html/
+        state: absent
+    - name: Remove frontend.zip in tmp
+      file:
+        path: /tmp/frontend.tar.gz
+        state: absent
+    - name: Create HTML Directory
+      file:
+        path: /usr/share/nginx/html/
+        state: directory
+    - name: Dowload frontend.tar.gz in tmp directory
+      get_url:
+        url: https://raw.githubusercontent.com/vivektenali/Expense-shell/refs/heads/main/artifacts/expense-frontend-v3.tar.gz
+        dest: /tmp/frontend.tar.gz
+    - name: Unzip frontend
+      unarchive:
+        src: /tmp/frontend.tar.gz
+        dest: /usr/share/nginx/html/
+        remote_src: yes
+    - name: copy nginx conf
+      template:
+       src: expense.conf.j2
+       dest: /etc/nginx/default.d/expense.conf
+    - name: start and enable frontend
+      service:
+        name: nginx
+        state: restarted
+        enabled: yes

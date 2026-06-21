@@ -1,0 +1,22 @@
+---
+- name: Configuring loadbalancer server
+  hosts: frontend
+  become: yes
+  tasks:
+    - name: Installing Nginx
+      package:
+        name: nginx
+        state: present
+    - name: Remove Default nginx conf
+      file:
+        path: /etc/nginx/nginx.conf
+        state: absent
+    - name: copy nginx conf
+      template:
+        src: loadbalancer.conf.j2
+        dest: /etc/nginx/nginx.conf
+    - name: start and enable frontend
+      service:
+        name: nginx
+        state: present
+        enabled: yes

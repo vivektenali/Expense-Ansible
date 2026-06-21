@@ -1,0 +1,6 @@
+ansible_user: ec2-user
+ansible_password: DevOps321
+MYSQL_HOST: database.vivektenali.online
+BACKEND_HOST: backend.vivektenali.online
+FRONTEND_HOST: frontend.vivektenali.online
+MY_SQL_ROOT_PASSWORD: ExpenseApp@1

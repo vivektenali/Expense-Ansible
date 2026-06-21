@@ -1,0 +1,67 @@
+---
+- name: Configuring backend server
+  hosts: backend
+  become: yes
+  tasks:
+    - name: Enabling Node JS 20 version
+      command: dnf module enable nodejs:20 -y
+    - name: Installing Node JS 20 Version
+      package:
+        name: nodejs
+        state: present
+    - name: Create Application User
+      user:
+        name: expense
+        system: true
+        home: /app
+        shell: /sbin/nologin
+        comment: expense system user
+    - name: Remove App Directory
+      file:
+        path: /app
+        state: absent
+    - name: Delete backend.tar.gz in tmp directory
+      file:
+        path: /tmp/backend.tar.gz
+        state: absent
+    - name: Create App Directory
+      file:
+        path: /app
+        state: directory
+    - name: Dowload backend.tar.gz in tmp directory
+      get_url:
+        url: https://raw.githubusercontent.com/vivektenali/Expense-shell/refs/heads/main/artifacts/expense-backend-v3.tar.gz
+        dest: /tmp/backend.tar.gz
+    - name: Unzip backend
+      unarchive:
+        src: /tmp/backend.tar.gz
+        dest: /app
+        remote_src: yes
+    - name: Install dependencies
+      community.general.npm:
+        path: /app
+    - name: Configure systemd service
+      template:
+          src: backend.service.j2
+          dest: /etc/systemd/system/backend.service
+    - name: Install PyMySQL
+      package:
+        name: python3-PyMySQL
+        state: present
+    - name: Load the database
+      community.mysql.mysql_db:
+        state: import
+        name: all
+        login_user: root
+        login_password: ExpenseApp@1
+        login_host: "{{ MYSQL_HOST }}"
+        target: /app/schema/backend.sql
+    - name: demon reload
+      systemd_service:
+        name: backend
+        daemon_reload: true
+    - name: Enable and Start Backend
+      service:
+        name: backend
+        state: restarted
+        enabled: yes

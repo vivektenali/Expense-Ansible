@@ -31,7 +31,7 @@
     - name: copy nginx conf
       template:
        src: expense.conf.j2
-       dest: /etc/nginx/default.d/expense.conf
+       dest: /etc/nginx/conf.d/expense.conf
     - name: start and enable frontend
       service:
         name: nginx
